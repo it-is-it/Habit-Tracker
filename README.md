@@ -27,7 +27,7 @@ Check the live app here: [Habit Tracker & Daily Planner Web App](https://it-is-i
 - React
 - Vite
 - Tailwind CSS
-- JavaScript / TypeScript (specify which you used)
+- TypeScript
 - GitHub Pages for deployment
 
 ---
