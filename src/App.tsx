@@ -25,8 +25,8 @@ function App() {
   const [confirmDeleteHabitId, setConfirmDeleteHabitId] = useState<
     string | null
   >(null);
-
   const [openMenuHabitId, setOpenMenuHabitId] = useState<string | null>(null);
+
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
     if (!destination) return;
@@ -165,7 +165,11 @@ function App() {
                               <HiTrash color="white" size={20} />
                             </button>
                             <button
-                              onClick={() => setOpenMenuHabitId(prev => prev === habit.id ? null : habit.id)}
+                              onClick={() =>
+                                setOpenMenuHabitId((prev) =>
+                                  prev === habit.id ? null : habit.id
+                                )
+                              }
                               aria-label="Options"
                               className="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
                             >
@@ -174,19 +178,28 @@ function App() {
                             {openMenuHabitId === habit.id && (
                               <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-20">
                                 <button
-                                  onClick={() => { openModal(habit); setOpenMenuHabitId(null); }}
+                                  onClick={() => {
+                                    openModal(habit);
+                                    setOpenMenuHabitId(null);
+                                  }}
                                   className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
                                 >
                                   View
                                 </button>
                                 <button
-                                  onClick={() => { openModal(habit, true); setOpenMenuHabitId(null); }}
+                                  onClick={() => {
+                                    openModal(habit, true);
+                                    setOpenMenuHabitId(null);
+                                  }}
                                   className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
                                 >
                                   Edit
                                 </button>
                                 <button
-                                  onClick={() => { setConfirmDeleteHabitId(habit.id); setOpenMenuHabitId(null); }}
+                                  onClick={() => {
+                                    setConfirmDeleteHabitId(habit.id);
+                                    setOpenMenuHabitId(null);
+                                  }}
                                   className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
                                 >
                                   Delete

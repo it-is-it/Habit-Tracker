@@ -33,7 +33,10 @@ const HabitViewModal: React.FC<HabitViewModalProps> = ({
   const [showOptions, setShowOptions] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [editTitle, setEditTitle] = useState(habit.title);
-  const [editDescription, setEditDescription] = useState(habit.description || "");
+  const [editDescription, setEditDescription] = useState(
+    habit.description || ""
+  );
+
   useEffect(() => {
     setEditTitle(habit.title);
     setEditDescription(habit.description || "");
@@ -91,7 +94,8 @@ const HabitViewModal: React.FC<HabitViewModalProps> = ({
             aria-label="Mark today's completion"
           />
           {isEditing ? (
-            <input autoFocus
+            <input
+              autoFocus
               type="text"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
@@ -103,7 +107,7 @@ const HabitViewModal: React.FC<HabitViewModalProps> = ({
             </h2>
           )}
           <button
-            onClick={() => setShowOptions(prev => !prev)}
+            onClick={() => setShowOptions((prev) => !prev)}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
             aria-label="Options"
           >
@@ -145,10 +149,12 @@ const HabitViewModal: React.FC<HabitViewModalProps> = ({
             className="mt-2 w-full border border-gray-300 rounded-md p-2 focus:outline-none dark:bg-gray-800 dark:text-gray-100"
             rows={3}
           />
-        ) : habit.description && (
-          <p className="mt-2 text-gray-700 dark:text-gray-300">
-            {habit.description}
-          </p>
+        ) : (
+          habit.description && (
+            <p className="mt-2 text-gray-700 dark:text-gray-300">
+              {habit.description}
+            </p>
+          )
         )}
 
         <div className="mt-4 grid grid-cols-2 gap-4 text-gray-800 dark:text-gray-200">
@@ -225,10 +231,25 @@ const HabitViewModal: React.FC<HabitViewModalProps> = ({
         {showConfirmDelete && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white dark:bg-gray-800 p-4 rounded-md w-full max-w-sm mx-auto">
-              <p className="text-gray-900 dark:text-gray-100">Are you sure you want to delete this habit?</p>
+              <p className="text-gray-900 dark:text-gray-100">
+                Are you sure you want to delete this habit?
+              </p>
               <div className="mt-4 flex justify-end space-x-3">
-                <button onClick={() => { onDelete?.(habit.id); onClose(); }} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none">Delete</button>
-                <button onClick={() => setShowConfirmDelete(false)} className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400 focus:outline-none">Cancel</button>
+                <button
+                  onClick={() => {
+                    onDelete?.(habit.id);
+                    onClose();
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setShowConfirmDelete(false)}
+                  className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400 focus:outline-none"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
