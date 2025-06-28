@@ -1,69 +1,104 @@
-# React + TypeScript + Vite
+# Habit Tracker & Daily Planner Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, fast, and responsive Habit Tracker web application built with **React** and **Vite**, styled using **Tailwind CSS**.  
+Track your daily habits, set goals, and improve your productivity effortlessly.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Demo
 
-## Expanding the ESLint configuration
+Check the live app here: [https://it-is-it.github.io/Habit-Tracker/](https://it-is-it.github.io/Habit-Tracker/)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Features
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- Create, update, and delete habits
+- Mark habits as completed for each day
+- View your progress over time
+- Responsive design for desktop and mobile
+- Built with Vite for lightning-fast development and builds
+- Tailwind CSS for clean and customizable styling
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## Tech Stack
+
+- React
+- Vite
+- Tailwind CSS
+- JavaScript / TypeScript (specify which you used)
+- GitHub Pages for deployment
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm installed on your machine
+
+### Installation
+
+1. Clone the repo
+
+```bash
+git clone https://github.com/it-is-it/Habit-Tracker.git
+cd Habit-Tracker
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Start the development server
+
+```bash
+npm run dev
+```
+
+4. Open [http://localhost:5173](http://localhost:5173) in your browser to view the app
+
+---
+
+## Build and Deployment
+
+### Build the app
+
+```bash
+npm run build
+```
+
+### Deploy to GitHub Pages
+
+Make sure you have `gh-pages` installed and configured in your `package.json`:
+
+```json
+"scripts": {
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -d dist"
+}
+```
+
+Then run:
+
+```bash
+npm run deploy
+```
+
+---
+
+## Configuration
+
+Make sure the `base` property in `vite.config.js` is set correctly:
 
 ```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+export default defineConfig({
+  base: "/Habit-Tracker/",
+  plugins: [react(), tailwindcss()],
+});
 ```
+
+This ensures correct routing and asset loading on GitHub Pages.
