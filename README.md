@@ -7,7 +7,7 @@ Track your daily habits, set goals, and improve your productivity effortlessly.
 
 ## Demo
 
-Check the live app here: [https://it-is-it.github.io/Habit-Tracker/](https://it-is-it.github.io/Habit-Tracker/)
+Check the live app here: [Habit Tracker & Daily Planner Web App](https://it-is-it.github.io/Habit-Tracker/)
 
 ---
 
