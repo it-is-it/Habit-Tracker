@@ -9,9 +9,9 @@ export const loadHabits = (): Habit[] => {
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      return parsed.map((h: any) => ({
-        id: h.id,
-        title: h.title,
+      return parsed.map((h: Partial<Habit>) => ({
+        id: h.id ?? crypto.randomUUID(),
+        title: h.title ?? "Untitled Habit",
         description: h.description ?? "",
         createdAt: h.createdAt ?? new Date().toISOString(),
         completedDates: h.completedDates ?? [],

@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
 import type { Habit } from "./models/Habit";
 import HabitProgress from "./components/HabitProgress.tsx";
-import { loadHabits, saveHabits, createHabit, toggleHabitCompletion, deleteHabit as deleteHabitService, updateHabit } from "./services/habitService";
-import { HiTrash, HiPencil, HiEye } from "react-icons/hi2";
+import {
+  loadHabits,
+  saveHabits,
+  createHabit,
+  toggleHabitCompletion,
+  deleteHabit as deleteHabitService,
+  updateHabit,
+} from "./services/habitService";
+import { HiTrash, HiPencil, HiEye, HiEllipsisVertical } from "react-icons/hi2";
 import QuoteBanner from "./components/QuoteBanner.tsx";
 import ProgressBar from "./components/ProgressBar.tsx";
 import HabitViewModal from "./components/HabitViewModal";
@@ -15,8 +22,11 @@ function App() {
   const [isDark, setIsDark] = useState<boolean>(false);
   const [modalHabit, setModalHabit] = useState<Habit | null>(null);
   const [modalIsEditing, setModalIsEditing] = useState(false);
-  const [confirmDeleteHabitId, setConfirmDeleteHabitId] = useState<string | null>(null);
+  const [confirmDeleteHabitId, setConfirmDeleteHabitId] = useState<
+    string | null
+  >(null);
 
+  const [openMenuHabitId, setOpenMenuHabitId] = useState<string | null>(null);
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
     if (!destination) return;
@@ -25,7 +35,7 @@ function App() {
     items.splice(destination.index, 0, moved);
     setHabits(items);
     saveHabits(items);
-  }; 
+  };
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
@@ -69,13 +79,9 @@ function App() {
   };
 
   return (
-    <div
-      className="min-h-screen bg-white-100 dark:bg-gray-900
-     flex flex-col py-8 px-10"
-    >
-      <div className="flex justify-between items-center max-w-6xl mb-6 py-5">
-        <div />
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+    <div className="min-h-screen bg-white-100 dark:bg-gray-900 py-8 px-10">
+      <div className="flex justify-between items-center mb-16 py-5">
+        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-white">
           Habit Tracker & Daily Planner Web App
         </h1>
         <button
@@ -92,11 +98,11 @@ function App() {
           placeholder="New habit"
           value={newHabit}
           onChange={(e) => setNewHabit(e.target.value)}
-          className="appearance-none block w-full max-w-md px-4 py-2 mb-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="appearance-none block w-full max-w-md px-4 py-2 mb-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm md:text-base"
         />
         <button
           onClick={addHabit}
-          className="w-full max-w-md inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-800 dark:hover:bg-gray-700"
+          className="w-full max-w-md inline-flex justify-center px-4 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-800 dark:hover:bg-gray-700"
         >
           Add Habit
         </button>
@@ -108,60 +114,93 @@ function App() {
                 ref={provided.innerRef}
                 className="my-16 space-y-4 w-full max-w-xxl"
               >
-          {habits.map((habit, index) => (
-            <Draggable draggableId={habit.id} index={index} key={habit.id}>
-              {(provided) => (
-                <li
-                  ref={provided.innerRef}
-                  {...provided.draggableProps}
-                  {...provided.dragHandleProps}
-                  className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
-                >
-              <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={habit.completedDates.includes(
-                      new Date().toISOString().split("T")[0]
+                {habits.map((habit, index) => (
+                  <Draggable
+                    draggableId={habit.id}
+                    index={index}
+                    key={habit.id}
+                  >
+                    {(provided) => (
+                      <li
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className="relative p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+                      >
+                        <div className="flex items-center justify-between">
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={habit.completedDates.includes(
+                                new Date().toISOString().split("T")[0]
+                              )}
+                              onChange={() => toggleCompletion(habit.id)}
+                              className="mr-2 h-5 w-5 text-green-600 dark:text-green-400 form-checkbox"
+                            />
+                            {habit.title}
+                          </label>
+                          <span className="hidden md:inline-block text-sm text-gray-300 mr-3">
+                            {habit.completedDates.length} days completed
+                          </span>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => openModal(habit)}
+                              aria-label="View habit"
+                              className="hidden md:inline-flex text-blue-600 hover:text-blue-800 focus:outline-none"
+                            >
+                              <HiEye color="white" size={20} />
+                            </button>
+                            <button
+                              onClick={() => openModal(habit, true)}
+                              aria-label="Edit habit"
+                              className="hidden md:inline-flex text-yellow-500 hover:text-yellow-700 focus:outline-none"
+                            >
+                              <HiPencil color="white" size={20} />
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteHabitId(habit.id)}
+                              aria-label="Delete habit"
+                              className="hidden md:inline-flex text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                            >
+                              <HiTrash color="white" size={20} />
+                            </button>
+                            <button
+                              onClick={() => setOpenMenuHabitId(prev => prev === habit.id ? null : habit.id)}
+                              aria-label="Options"
+                              className="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
+                            >
+                              <HiEllipsisVertical size={20} />
+                            </button>
+                            {openMenuHabitId === habit.id && (
+                              <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-20">
+                                <button
+                                  onClick={() => { openModal(habit); setOpenMenuHabitId(null); }}
+                                  className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  View
+                                </button>
+                                <button
+                                  onClick={() => { openModal(habit, true); setOpenMenuHabitId(null); }}
+                                  className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => { setConfirmDeleteHabitId(habit.id); setOpenMenuHabitId(null); }}
+                                  className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <ProgressBar completedDates={habit.completedDates} />
+                      </li>
                     )}
-                    onChange={() => toggleCompletion(habit.id)}
-                    className="mr-2 h-5 w-5 text-green-600 dark:text-green-400 form-checkbox"
-                  />
-                  {habit.title}
-                </label>
-                <span className="text-sm text-gray-300 mr-3">
-                  {habit.completedDates.length} days completed
-                </span>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => openModal(habit)}
-                    aria-label="View habit"
-                    className="text-blue-600 hover:text-blue-800 focus:outline-none"
-                  >
-                    <HiEye color="white" size={20} />
-                  </button>
-                  <button
-                    onClick={() => openModal(habit, true)}
-                    aria-label="Edit habit"
-                    className="text-yellow-500 hover:text-yellow-700 focus:outline-none"
-                  >
-                    <HiPencil color="white" size={20} />
-                  </button>
-                  <button
-                    onClick={() => setConfirmDeleteHabitId(habit.id)}
-                    aria-label="Delete habit"
-                    className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-                  >
-                    <HiTrash color="white" size={20} />
-                  </button>
-                </div>
-              </div>
-              <ProgressBar completedDates={habit.completedDates} />
-                </li>
-              )}
-            </Draggable>
-          ))}
-                        {provided.placeholder}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
               </ul>
             )}
           </Droppable>
@@ -171,10 +210,25 @@ function App() {
         {confirmDeleteHabitId && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-md w-full max-w-sm mx-auto">
-              <p className="text-gray-900 dark:text-gray-100">Are you sure you want to delete this habit?</p>
+              <p className="text-gray-900 dark:text-gray-100">
+                Are you sure you want to delete this habit?
+              </p>
               <div className="mt-4 flex justify-end space-x-3">
-                <button onClick={() => { deleteHabit(confirmDeleteHabitId!); setConfirmDeleteHabitId(null); }} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none">Delete</button>
-                <button onClick={() => setConfirmDeleteHabitId(null)} className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400 focus:outline-none">Cancel</button>
+                <button
+                  onClick={() => {
+                    deleteHabit(confirmDeleteHabitId!);
+                    setConfirmDeleteHabitId(null);
+                  }}
+                  className="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setConfirmDeleteHabitId(null)}
+                  className="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400 focus:outline-none"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
