@@ -1,4 +1,3 @@
-// src/context/ThemeProvider.tsx
 import { useEffect, useState, createContext, useContext } from "react";
 
 type Theme = "light" | "dark";
@@ -10,14 +9,9 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const getSystemTheme = (): Theme =>
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-
   const getInitialTheme = (): Theme => {
     const stored = localStorage.getItem("theme") as Theme | null;
-    return stored ?? getSystemTheme();
+    return stored ?? "light";
   };
 
   const [theme, setTheme] = useState<Theme>(getInitialTheme);

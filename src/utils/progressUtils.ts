@@ -5,9 +5,6 @@ export interface CompletionRate {
   percent: number;
 }
 
-/**
- * Calculate completed count and percentage for the last 7 days
- */
 export function calculateCompletionRate(
   completedDates: string[]
 ): CompletionRate {

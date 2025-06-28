@@ -1,35 +1,35 @@
 import { useState, useEffect } from "react";
 import type { Habit } from "./models/Habit";
-import HabitProgress from "./HabitProgress";
-import {
-  loadHabits,
-  createHabit,
-  toggleHabitCompletion,
-  deleteHabit as deleteHabitService,
-  updateHabitTitle,
-} from "./services/habitService";
+import HabitProgress from "./components/HabitProgress.tsx";
+import { loadHabits, saveHabits, createHabit, toggleHabitCompletion, deleteHabit as deleteHabitService, updateHabit } from "./services/habitService";
 import { HiTrash, HiPencil, HiEye } from "react-icons/hi2";
 import QuoteBanner from "./components/QuoteBanner.tsx";
 import ProgressBar from "./components/ProgressBar.tsx";
+import HabitViewModal from "./components/HabitViewModal";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import type { DropResult } from "@hello-pangea/dnd";
 
 function App() {
   const [habits, setHabits] = useState<Habit[]>(() => loadHabits());
   const [newHabit, setNewHabit] = useState<string>("");
-  const [isDark, setIsDark] = useState<boolean>(
-    document.documentElement.classList.contains("dark")
-  ); // theme state
+  const [isDark, setIsDark] = useState<boolean>(false);
   const [modalHabit, setModalHabit] = useState<Habit | null>(null);
-  const [isEditingModal, setIsEditingModal] = useState<boolean>(false);
-  const [editTitle, setEditTitle] = useState<string>("");
+  const [modalIsEditing, setModalIsEditing] = useState(false);
+  const [confirmDeleteHabitId, setConfirmDeleteHabitId] = useState<string | null>(null);
 
-  // Default to dark mode on Windows
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination) return;
+    const items = Array.from(habits);
+    const [moved] = items.splice(source.index, 1);
+    items.splice(destination.index, 0, moved);
+    setHabits(items);
+    saveHabits(items);
+  }; 
+
   useEffect(() => {
-    const isWindows = navigator.platform.toLowerCase().includes("win");
-    if (isWindows) {
-      document.documentElement.classList.add("dark");
-      setIsDark(true);
-    }
-  }, []);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, [isDark]);
 
   const addHabit = () => {
     if (!newHabit.trim()) return;
@@ -44,13 +44,7 @@ function App() {
   };
 
   const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove("dark");
-      setIsDark(false);
-    } else {
-      document.documentElement.classList.add("dark");
-      setIsDark(true);
-    }
+    setIsDark((prev) => !prev);
   };
 
   const toggleCompletion = (id: string) => {
@@ -58,26 +52,27 @@ function App() {
     setHabits(updated);
   };
 
-  const openModal = (habit: Habit) => {
+  const openModal = (habit: Habit, editing = false) => {
     setModalHabit(habit);
-    setIsEditingModal(false);
-    setEditTitle(habit.title);
+    setModalIsEditing(editing);
   };
 
   const closeModal = () => {
     setModalHabit(null);
-    setIsEditingModal(false);
+    setModalIsEditing(false);
   };
 
-  const handleSave = () => {
-    if (!modalHabit) return;
-    const updatedList = updateHabitTitle(modalHabit.id, editTitle.trim());
+  const handleModalSave = (id: string, title: string, description: string) => {
+    const updatedList = updateHabit(id, title.trim(), description.trim());
     setHabits(updatedList);
     closeModal();
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col py-8 px-10">
+    <div
+      className="min-h-screen bg-white-100 dark:bg-gray-900
+     flex flex-col py-8 px-10"
+    >
       <div className="flex justify-between items-center max-w-6xl mb-6 py-5">
         <div />
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
@@ -101,16 +96,27 @@ function App() {
         />
         <button
           onClick={addHabit}
-          className="w-full max-w-md inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="w-full max-w-md inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-800 dark:hover:bg-gray-700"
         >
           Add Habit
         </button>
-        <ul className="my-16 space-y-4 w-full max-w-xxl">
-          {habits.map((habit) => (
-            <li
-              key={habit.id}
-              className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
-            >
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="habit-list">
+            {(provided) => (
+              <ul
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="my-16 space-y-4 w-full max-w-xxl"
+              >
+          {habits.map((habit, index) => (
+            <Draggable draggableId={habit.id} index={index} key={habit.id}>
+              {(provided) => (
+                <li
+                  ref={provided.innerRef}
+                  {...provided.draggableProps}
+                  {...provided.dragHandleProps}
+                  className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+                >
               <div className="flex items-center justify-between">
                 <label className="flex items-center">
                   <input
@@ -135,17 +141,14 @@ function App() {
                     <HiEye color="white" size={20} />
                   </button>
                   <button
-                    onClick={() => {
-                      openModal(habit);
-                      setIsEditingModal(true);
-                    }}
+                    onClick={() => openModal(habit, true)}
                     aria-label="Edit habit"
                     className="text-yellow-500 hover:text-yellow-700 focus:outline-none"
                   >
                     <HiPencil color="white" size={20} />
                   </button>
                   <button
-                    onClick={() => deleteHabit(habit.id)}
+                    onClick={() => setConfirmDeleteHabitId(habit.id)}
                     aria-label="Delete habit"
                     className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
                   >
@@ -154,60 +157,44 @@ function App() {
                 </div>
               </div>
               <ProgressBar completedDates={habit.completedDates} />
-            </li>
+                </li>
+              )}
+            </Draggable>
           ))}
-        </ul>
+                        {provided.placeholder}
+              </ul>
+            )}
+          </Droppable>
+        </DragDropContext>
         <HabitProgress habits={habits} />
         <QuoteBanner />
-        {modalHabit && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-              {!isEditingModal ? (
-                <>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                    {modalHabit!.title}
-                  </h2>
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      onClick={() => setIsEditingModal(true)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={closeModal}
-                      className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <input
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      onClick={handleSave}
-                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={closeModal}
-                      className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </>
-              )}
+        {confirmDeleteHabitId && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-md w-full max-w-sm mx-auto">
+              <p className="text-gray-900 dark:text-gray-100">Are you sure you want to delete this habit?</p>
+              <div className="mt-4 flex justify-end space-x-3">
+                <button onClick={() => { deleteHabit(confirmDeleteHabitId!); setConfirmDeleteHabitId(null); }} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none">Delete</button>
+                <button onClick={() => setConfirmDeleteHabitId(null)} className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400 focus:outline-none">Cancel</button>
+              </div>
             </div>
           </div>
+        )}
+        {modalHabit && (
+          <HabitViewModal
+            initialEditing={modalIsEditing}
+            habit={modalHabit}
+            onClose={closeModal}
+            onSave={handleModalSave}
+            onToggleCompletion={toggleCompletion}
+            onDelete={(id) => {
+              const updated = deleteHabitService(id);
+              setHabits(updated);
+            }}
+            onArchive={(id) => {
+              const updated = deleteHabitService(id);
+              setHabits(updated);
+            }}
+          />
         )}
       </div>
     </div>
